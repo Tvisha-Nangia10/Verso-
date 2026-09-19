@@ -12,14 +12,21 @@
    ════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* The content column: 80% of the viewport, but never wider than this. */
-  --page-width: 80%;
+  /* The content column. One token, shared by the dashboard pages and the
+     landing page, so every screen lines up on the same left and right edge. */
+  --page-width: 75%;
   --page-max: 1280px;
   --gutter: 30px;
+
+  /* The side space that column leaves over. Lets a full-bleed bar (the
+     landing page's features strip) sit edge to edge while its contents
+     still line up with the column. */
+  --page-inset: max(0px, calc((100% - min(var(--page-width), var(--page-max))) / 2));
 }
 
 /* ─────────────────────── the content column ────────────────────── */
 
+.think-container,
 .content-area > .page {
   width: var(--page-width);
   max-width: var(--page-max);
@@ -65,17 +72,20 @@ img, svg, canvas, video { max-width: 100%; }
 .hero-strip > *, .trending-grid > *, .insights-grid > * { min-width: 0; }
 
 /* ════════════════════════════════════════════════════════════════
-   ≤ 1440px — give the column a little more room
+   ≤ 1280px — give the column a little more room
+
+   The ladder starts below 1280 rather than at 1440, so the common laptop
+   widths (1440, 1536, 1600) all get the full 75% column.
    ════════════════════════════════════════════════════════════════ */
-@media (max-width: 1440px) {
-  :root { --page-width: 86%; }
+@media (max-width: 1280px) {
+  :root { --page-width: 84%; }
 }
 
 /* ════════════════════════════════════════════════════════════════
-   ≤ 1240px — four-across becomes three, the AI panel narrows
+   ≤ 1140px — four-across becomes two, the AI panel narrows
    ════════════════════════════════════════════════════════════════ */
-@media (max-width: 1240px) {
-  :root { --page-width: 90%; --gutter: 24px; }
+@media (max-width: 1140px) {
+  :root { --page-width: 92%; --gutter: 24px; }
 
   .sr-user-grid { grid-template-columns: repeat(2, 1fr); }
   .pub-ai-panel { width: 260px; }
@@ -146,7 +156,6 @@ img, svg, canvas, video { max-width: 100%; }
   .cover-visual { display: none; }
   .cover-copy { padding-right: 0; align-items: flex-start; }
   .cover-features { flex-wrap: wrap; }
-  .cf-item { flex: 1 1 50%; min-width: 200px; }
 
   /* Auth: drop the dark quote panel. */
   .auth-left { display: none; }
@@ -266,7 +275,6 @@ img, svg, canvas, video { max-width: 100%; }
    ════════════════════════════════════════════════════════════════ */
 @media (max-width: 420px) {
   .prof-grid { grid-template-columns: 1fr; }
-  .cf-item { flex: 1 1 100%; }
   .cover-cta-row { flex-direction: column; width: 100%; }
   .cover-cta-row button { width: 100%; }
   .tc-num { font-size: 24px; }
@@ -335,11 +343,15 @@ img, svg, canvas, video { max-width: 100%; }
                               this one out from under the user. */
 }
 
-/* Nav joins the flow instead of floating over the hero. */
+/* Nav joins the flow instead of floating over the hero, and sits on the
+   shared column so the logo lines up with the headline below it. */
 .cover-nav {
   position: static;
   flex: 0 0 auto;
-  padding: clamp(14px, 2.4vh, 28px) clamp(24px, 4vw, 72px);
+  width: var(--page-width);
+  max-width: var(--page-max);
+  margin-inline: auto;
+  padding: clamp(14px, 2.4vh, 28px) 0;
 }
 
 /* The hero takes whatever height is left over. */
@@ -351,7 +363,10 @@ img, svg, canvas, video { max-width: 100%; }
   min-height: 0;
   height: auto;
   align-items: center;
-  padding: clamp(8px, 2vh, 24px) clamp(24px, 4vw, 72px);
+  width: var(--page-width);
+  max-width: var(--page-max);
+  margin-inline: auto;
+  padding: clamp(8px, 2vh, 24px) 0;
   column-gap: clamp(24px, 4vw, 56px);
   overflow-y: auto;
   overflow-x: hidden;
@@ -359,12 +374,16 @@ img, svg, canvas, video { max-width: 100%; }
 }
 .cover-content::-webkit-scrollbar { display: none; }
 
-/* Features strip becomes the footer of the column. */
+/* The features strip becomes the footer. Its bar stays full-bleed — it has a
+   background and a top border that should reach the window edges — but its
+   items are inset onto the shared column. */
 .cover-features {
   position: static;
   flex: 0 0 auto;
+  justify-content: flex-start;
+  padding-inline: var(--page-inset);
 }
-.cf-item { padding: clamp(9px, 1.7vh, 15px) clamp(16px, 2.6vw, 36px); }
+.cf-item { flex: 1; padding: clamp(9px, 1.7vh, 15px) clamp(14px, 2vw, 28px); }
 
 /* ── Vertical rhythm scales with the window, not just its width ──
    min(Xvw, Yvh) means the type shrinks for a short window as readily as
@@ -409,9 +428,46 @@ img, svg, canvas, video { max-width: 100%; }
 }
 
 /* Below 900px the artwork is already hidden, so the copy centres itself. */
+/* Once the column is the full width (≤1024), it has no side space left to
+   inset against — so the landing page needs explicit gutters, or the nav
+   links and headline sit flush against the screen edge. */
+@media (max-width: 1024px) {
+  .cover-nav,
+  .cover-content { padding-inline: var(--gutter); }
+  .cover-features { padding-inline: 0; }
+  .cf-item { padding-inline: var(--gutter); }
+}
+
 @media (max-width: 900px) {
   .cover-content { justify-items: center; text-align: center; }
   .cover-copy { align-items: center; padding-right: 0; }
   .cover-subhead { max-width: 460px; }
   .cover-proof { justify-content: center; }
+
+  /* Two-up, so the strip reads as a 2x2 block rather than an orphaned row. */
+  .cf-item { flex: 1 1 calc(50% - 1px); min-width: 200px; }
+}
+
+@media (max-width: 480px) {
+  .cf-item { flex: 1 1 100%; }
+}
+
+/* ─────────────────────── touch targets ────────────────────────
+   The auth flow's text links were 17–18px tall, well under the ~44px a
+   fingertip needs. The negative margins absorb the added padding so the
+   links stay exactly where they were laid out. */
+@media (max-width: 900px) {
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 13px 10px;
+    margin: -13px -10px;
+  }
+  .auth-form-sub a,
+  .auth-terms a,
+  .cover-nav-link {
+    display: inline-block;
+    padding-block: 12px;
+    margin-block: -12px;
+  }
 }
