@@ -169,7 +169,7 @@ export default function HomePage({ onNavigate, onOpenArticle }: Props) {
         </div>
         <div className="gold-rule"><div className="gold-dot" /></div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '14px' }}>
+        <div className="feature-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '14px' }}>
           {featureCard(
             'rooms', 'linear-gradient(135deg,#162014,#1e2e1a)', 'rgba(90,158,120,.3)',
             'rgba(90,158,120,.15)', '#5a9e78',

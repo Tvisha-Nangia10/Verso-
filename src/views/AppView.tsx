@@ -32,6 +32,7 @@ export default function AppView() {
 
   const [page, setPage] = useState<PageId>('home');
   const [searchOpen, setSearchOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [readingId, setReadingId] = useState<string | null>(null);
@@ -104,6 +105,7 @@ export default function AppView() {
 
   function navigate(p: PageId) {
     setPage(p);
+    setDrawerOpen(false);
     if (p !== 'profile') setViewingProfile(null);
     setConfigClosed();
   }
@@ -156,18 +158,34 @@ export default function AppView() {
         />
       )}
 
+      {drawerOpen && <div className="sidebar-scrim" onClick={() => setDrawerOpen(false)} />}
+
       <Sidebar
         page={page}
+        open={drawerOpen}
         profile={profile}
         unreadMessages={unreadMessages}
         unreadNotifications={unreadNotifications}
         liveRooms={liveRooms}
         onNavigate={navigate}
-        onOpenChat={() => setChatOpen(true)}
+        onOpenChat={() => { setDrawerOpen(false); setChatOpen(true); }}
       />
 
       <div className="main">
         <header className="topbar">
+          <button
+            className="sidebar-toggle"
+            onClick={() => setDrawerOpen(v => !v)}
+            aria-label={drawerOpen ? 'Close navigation' : 'Open navigation'}
+            aria-expanded={drawerOpen}
+          >
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+              {drawerOpen
+                ? <path d="M3 3l10 10M13 3L3 13" />
+                : <path d="M2 4h12M2 8h12M2 12h12" />}
+            </svg>
+          </button>
+
           <div className="search-wrap">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
               <circle cx="7" cy="7" r="4.5" /><path d="M11 11l2.5 2.5" />
@@ -189,7 +207,7 @@ export default function AppView() {
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
                 <path d="M1 9.5L3 9 9 3a1.6 1.6 0 00-2.5-2L1 7z" />
               </svg>
-              Write
+              <span>Write</span>
             </button>
             <div className="icon-btn" style={{ position: 'relative' }} onClick={() => navigate('notifications')}>
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">

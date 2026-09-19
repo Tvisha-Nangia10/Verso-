@@ -1,0 +1,319 @@
+/* ════════════════════════════════════════════════════════════════
+   TH-INK — layout width + responsiveness
+
+   global.css is the prototype's stylesheet, carried over verbatim so the
+   design matches the original. This file layers on top of it and owns two
+   things the prototype never had:
+
+     1. A measured content column (~80% of the viewport) instead of edge-to-edge.
+     2. Breakpoints, so the app works below 1440px and on a phone.
+
+   Loaded after global.css, so everything here wins without editing the original.
+   ════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* The content column: 80% of the viewport, but never wider than this. */
+  --page-width: 80%;
+  --page-max: 1280px;
+  --gutter: 30px;
+}
+
+/* ─────────────────────── the content column ────────────────────── */
+
+.content-area > .page {
+  width: var(--page-width);
+  max-width: var(--page-max);
+  margin-inline: auto;
+}
+
+/* The editor is deliberately full-bleed — it is its own workspace. */
+.content-area > #page-publish {
+  width: 100%;
+  max-width: none;
+}
+
+/* The profile cover should reach the edges of the column, not the gutters. */
+.content-area > #page-profile {
+  padding-top: 0;
+}
+
+/* Centre the search overlay against the column rather than the window. */
+.so-box {
+  width: min(92vw, 620px);
+}
+
+/* ───────────────────── generic hardening ───────────────────────── */
+
+/* Nothing should be able to push a horizontal scrollbar onto the page. */
+html, body { max-width: 100%; overflow-x: hidden; }
+
+img, svg, canvas, video { max-width: 100%; }
+
+/* Long titles and pasted URLs wrap instead of overflowing their card. */
+.a-title, .bm-title, .trend-title, .sr-card-title, .col-title,
+.ni-title, .room-title, .cap-title, .prof-post-label, .notif-text {
+  overflow-wrap: anywhere;
+}
+
+/* Grids should never force a column narrower than its content. */
+.card-grid, .col-grid, .rooms-grid, .sr-grid, .sr-user-grid,
+.hero-strip, .trending-grid, .dna-grid, .capsule-cards,
+.insights-grid, .prof-grid {
+  min-width: 0;
+}
+.card-grid > *, .col-grid > *, .rooms-grid > *, .sr-grid > *,
+.hero-strip > *, .trending-grid > *, .insights-grid > * { min-width: 0; }
+
+/* ════════════════════════════════════════════════════════════════
+   ≤ 1440px — give the column a little more room
+   ════════════════════════════════════════════════════════════════ */
+@media (max-width: 1440px) {
+  :root { --page-width: 86%; }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   ≤ 1240px — four-across becomes three, the AI panel narrows
+   ════════════════════════════════════════════════════════════════ */
+@media (max-width: 1240px) {
+  :root { --page-width: 90%; --gutter: 24px; }
+
+  .sr-user-grid { grid-template-columns: repeat(2, 1fr); }
+  .pub-ai-panel { width: 260px; }
+  .pub-content { padding: 40px 48px; }
+
+  /* "Only on TH-INK" — the four feature cards on Home. */
+  .feature-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   ≤ 1024px — tablet. The sidebar becomes a drawer.
+   ════════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  :root { --page-width: 100%; --gutter: 20px; }
+
+  .content-area { padding: 22px var(--gutter) !important; }
+
+  /* Sidebar slides in over the content instead of taking a column. */
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 200;
+    width: 264px;
+    transform: translateX(-100%);
+    transition: transform .26s cubic-bezier(.16, 1, .3, 1);
+    box-shadow: 0 0 60px rgba(14, 11, 9, .3);
+  }
+  .sidebar.open { transform: translateX(0); }
+
+  .sidebar-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 190;
+    background: rgba(14, 11, 9, .45);
+    backdrop-filter: blur(3px);
+    animation: scrimIn .2s ease both;
+  }
+  @keyframes scrimIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .sidebar-toggle { display: flex !important; }
+
+  /* Three-across grids drop to two. */
+  .card-grid, .col-grid, .rooms-grid, .sr-grid, .prof-grid,
+  .hero-strip { grid-template-columns: repeat(2, 1fr); }
+
+  .prof-grid, .prof-identity, .prof-stats-strip, .prof-topics, .prof-tabs {
+    padding-inline: var(--gutter);
+  }
+
+  /* The editor's assistant moves below the page instead of beside it. */
+  .pub-shell > .pub-editor > div[style*="display: flex"] { flex-direction: column; }
+  .pub-ai-panel {
+    width: 100%;
+    max-height: 340px;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, .07);
+  }
+  .pub-content { padding: 32px 28px; }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   ≤ 900px — cover and auth screens go single-column
+   ════════════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  /* Landing: drop the typewriter, centre the copy. */
+  .cover-content {
+    grid-template-columns: 1fr;
+    height: auto;
+    padding: 110px 32px 56px;
+    align-content: start;
+  }
+  .cover-visual { display: none; }
+  .cover-copy { padding-right: 0; }
+  .cover-nav { padding: 20px 32px; }
+
+  /* The features strip stops floating and becomes the page's footer, so the
+     hero fills whatever height is left rather than leaving a dead band. */
+  .cover-features { position: static; flex-wrap: wrap; margin-top: auto; }
+  .cf-item { flex: 1 1 50%; min-width: 220px; }
+
+  #view-cover {
+    overflow-y: auto;
+    height: auto;
+    min-height: 100vh;
+    flex-direction: column;
+  }
+  .cover-content { flex: 1; }
+
+  /* Auth: drop the dark quote panel. */
+  .auth-left { display: none; }
+  .auth-right { padding: 40px 28px; }
+
+  /* Two-across becomes one where the content is dense. */
+  .notes-layout { grid-template-columns: 1fr; height: auto !important; }
+  .notes-list { max-height: 260px; overflow-y: auto; border-right: none;
+                border-bottom: 1px solid var(--cream-3); }
+  .note-editor { min-height: 420px; }
+
+  .settings-layout { grid-template-columns: 1fr; height: auto; }
+  .settings-nav {
+    display: flex;
+    overflow-x: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--cream-3);
+    scrollbar-width: none;
+  }
+  .settings-nav::-webkit-scrollbar { display: none; }
+  .sn-item { white-space: nowrap; flex-shrink: 0; }
+
+  .settings-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .stg-input { width: 100% !important; }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   ≤ 760px — phone
+   ════════════════════════════════════════════════════════════════ */
+@media (max-width: 760px) {
+  :root { --gutter: 16px; }
+
+  .content-area { padding: 18px var(--gutter) !important; }
+
+  /* Everything stacks. */
+  .card-grid, .col-grid, .rooms-grid, .sr-grid, .sr-user-grid,
+  .hero-strip, .trending-grid, .dna-grid, .capsule-cards,
+  .insights-grid { grid-template-columns: 1fr; }
+
+  .prof-grid { grid-template-columns: repeat(2, 1fr); }
+  .feature-grid { grid-template-columns: 1fr !important; }
+
+  /* Topbar: keep search and the menu, drop the wordy buttons. */
+  .topbar { padding: 10px var(--gutter); gap: 8px; }
+  .topbar .btn-tb-ghost { display: none; }
+  .btn-tb-solid span { display: none; }
+  .search-wrap { max-width: none; }
+
+  /* Messages become a full-height sheet. */
+  .chat-panel {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    bottom: 0;
+    right: 0;
+  }
+  .chat-fab { bottom: 18px; right: 18px; }
+
+  /* Headings scale down. */
+  .serif-h { font-size: 22px !important; }
+  .prof-name { font-size: 24px; }
+  .dh-title { font-size: 28px; }
+  .rooms-hero-title, .pli-title { font-size: 26px; }
+
+  /* Profile header stacks under the avatar. */
+  .prof-identity { flex-direction: column; gap: 12px; }
+  .prof-actions { width: 100%; }
+  .prof-actions button { flex: 1; }
+  .prof-stats-strip { overflow-x: auto; gap: 18px; scrollbar-width: none; }
+  .prof-stats-strip::-webkit-scrollbar { display: none; }
+
+  /* Filter rails scroll sideways rather than wrapping into a wall. */
+  .topic-pills, .bm-filter-bar, .notif-filter-bar, .sr-filter-bar, .prof-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .topic-pills::-webkit-scrollbar, .bm-filter-bar::-webkit-scrollbar,
+  .notif-filter-bar::-webkit-scrollbar, .sr-filter-bar::-webkit-scrollbar,
+  .prof-tabs::-webkit-scrollbar { display: none; }
+  .topic-pill, .bm-filter, .notif-filter, .sr-filter, .ptab { flex-shrink: 0; }
+
+  /* Editor. */
+  .pub-content { padding: 24px 18px; }
+  .pub-art-title { font-size: 26px; }
+  .pub-topbar { flex-wrap: wrap; gap: 6px; }
+
+  /* Writing landing page. */
+  .pli-hero { grid-template-columns: 1fr; gap: 24px; }
+  .pli-meta-grid { grid-template-columns: 1fr; }
+
+  /* Time capsule countdown. */
+  .tc-clock { gap: 8px; }
+  .tc-num { font-size: 30px; }
+  .tc-sep { font-size: 22px; }
+
+  /* Bookmarks list. */
+  .bm-item { flex-wrap: wrap; }
+
+  /* Rooms. */
+  .rooms-hero-actions { flex-direction: column; }
+  .rooms-hero-actions button { width: 100%; }
+
+  /* Search overlay fills the screen. */
+  .so-box { width: 100%; height: 100%; max-height: none; border-radius: 0; }
+  #searchOverlay { padding: 0; align-items: stretch; }
+
+  /* Reading rooms: the live panel gets breathing room. */
+  .room-active-header { flex-wrap: wrap; gap: 8px; }
+  .room-reactions { flex-wrap: wrap; }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   ≤ 420px — small phone
+   ════════════════════════════════════════════════════════════════ */
+@media (max-width: 420px) {
+  .prof-grid { grid-template-columns: 1fr; }
+  .cf-item { flex: 1 1 100%; }
+  .cover-cta-row { flex-direction: column; width: 100%; }
+  .cover-cta-row button { width: 100%; }
+  .tc-num { font-size: 24px; }
+}
+
+/* ─────────────────── the drawer toggle button ──────────────────── */
+
+/* Hidden on desktop; the ≤1024 block turns it on. */
+.sidebar-toggle {
+  display: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1.5px solid var(--cream-3);
+  background: var(--white);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--ink-2);
+  flex-shrink: 0;
+  transition: all .15s;
+}
+.sidebar-toggle:hover { border-color: var(--ink-3); color: var(--ink); }
+.sidebar-toggle svg { width: 16px; height: 16px; }
+
+/* ─────────────────────── reduced motion ───────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

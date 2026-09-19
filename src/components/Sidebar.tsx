@@ -4,6 +4,8 @@ import type { PageId } from '../lib/pages';
 
 type Props = {
   page: PageId;
+  /** Drawer state — only meaningful at tablet width and below. */
+  open: boolean;
   profile: Profile | null;
   unreadMessages: number;
   unreadNotifications: number;
@@ -88,7 +90,7 @@ const PILL: React.CSSProperties = {
 };
 
 export default function Sidebar({
-  page, profile, unreadMessages, unreadNotifications, liveRooms, onNavigate, onOpenChat,
+  page, open, profile, unreadMessages, unreadNotifications, liveRooms, onNavigate, onOpenChat,
 }: Props) {
   const item = (id: PageId, icon: ReactNode, label: string, badge?: ReactNode) => (
     <div
@@ -106,7 +108,7 @@ export default function Sidebar({
   );
 
   return (
-    <aside className="sidebar">
+    <aside className={open ? 'sidebar open' : 'sidebar'}>
       <div className="sb-logo" onClick={() => onNavigate('home')}>
         TH<span className="logo-dash">-</span>INK <div className="sb-dot" />
       </div>
