@@ -140,29 +140,13 @@ img, svg, canvas, video { max-width: 100%; }
    ≤ 900px — cover and auth screens go single-column
    ════════════════════════════════════════════════════════════════ */
 @media (max-width: 900px) {
-  /* Landing: drop the typewriter, centre the copy. */
-  .cover-content {
-    grid-template-columns: 1fr;
-    height: auto;
-    padding: 110px 32px 56px;
-    align-content: start;
-  }
+  /* Landing: drop the typewriter and let the copy take the full width.
+     The flex-column structure itself lives in the LANDING PAGE section below. */
+  .cover-content { grid-template-columns: 1fr; }
   .cover-visual { display: none; }
-  .cover-copy { padding-right: 0; }
-  .cover-nav { padding: 20px 32px; }
-
-  /* The features strip stops floating and becomes the page's footer, so the
-     hero fills whatever height is left rather than leaving a dead band. */
-  .cover-features { position: static; flex-wrap: wrap; margin-top: auto; }
-  .cf-item { flex: 1 1 50%; min-width: 220px; }
-
-  #view-cover {
-    overflow-y: auto;
-    height: auto;
-    min-height: 100vh;
-    flex-direction: column;
-  }
-  .cover-content { flex: 1; }
+  .cover-copy { padding-right: 0; align-items: flex-start; }
+  .cover-features { flex-wrap: wrap; }
+  .cf-item { flex: 1 1 50%; min-width: 200px; }
 
   /* Auth: drop the dark quote panel. */
   .auth-left { display: none; }
@@ -316,4 +300,118 @@ img, svg, canvas, video { max-width: 100%; }
     animation-iteration-count: 1 !important;
     transition-duration: .01ms !important;
   }
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   LANDING PAGE — fit the viewport
+
+   The prototype sized the cover with height:100% and then floated the nav
+   and the features strip on top of it with position:absolute. Two problems:
+
+     - height:100% needs an unbroken chain to the root. React mounts into
+       #root, which had no height, so the cover collapsed to its content
+       height and left a dead band below it.
+     - Because the nav and the features strip were taken out of flow, the
+       hero slid underneath both of them on anything but a tall window —
+       the kicker collided with the logo and the proof row hid behind the
+       features bar.
+
+   So the cover is rebuilt as an ordinary flex column that owns exactly one
+   viewport: nav, then the hero taking the slack, then the features strip.
+   Nothing overlaps because nothing is positioned any more, and the type and
+   artwork scale against viewport *height* so short laptops still fit.
+   ════════════════════════════════════════════════════════════════ */
+
+/* The missing link in the height chain. */
+#root { height: 100%; }
+
+#view-cover {
+  height: 100dvh;          /* dvh, so mobile browser chrome is accounted for */
+  overflow: hidden;        /* contains the decorative gradient blobs, which
+                              deliberately bleed past the edges. Everything
+                              focusable lives inside .cover-content, which has
+                              its own scroll container, so nothing can scroll
+                              this one out from under the user. */
+}
+
+/* Nav joins the flow instead of floating over the hero. */
+.cover-nav {
+  position: static;
+  flex: 0 0 auto;
+  padding: clamp(14px, 2.4vh, 28px) clamp(24px, 4vw, 72px);
+}
+
+/* The hero takes whatever height is left over. */
+/* The hero takes the slack and scrolls *inside* itself if the window is too
+   short, so the nav and the features strip stay put instead of being pushed
+   off-screen. On a normal window there is nothing to scroll. */
+.cover-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+  align-items: center;
+  padding: clamp(8px, 2vh, 24px) clamp(24px, 4vw, 72px);
+  column-gap: clamp(24px, 4vw, 56px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+.cover-content::-webkit-scrollbar { display: none; }
+
+/* Features strip becomes the footer of the column. */
+.cover-features {
+  position: static;
+  flex: 0 0 auto;
+}
+.cf-item { padding: clamp(9px, 1.7vh, 15px) clamp(16px, 2.6vw, 36px); }
+
+/* ── Vertical rhythm scales with the window, not just its width ──
+   min(Xvw, Yvh) means the type shrinks for a short window as readily as
+   for a narrow one, which is what keeps the hero inside one screen. */
+.cover-copy { min-height: 0; padding-right: clamp(0px, 3vw, 48px); }
+.cover-kicker   { margin-bottom: clamp(8px, 2vh, 20px); }
+.cover-headline { font-size: clamp(30px, min(4.2vw, 7.6vh), 62px);
+                  margin-bottom: clamp(8px, 1.8vh, 18px); }
+.cover-subhead  { font-size: clamp(13px, min(1.3vw, 2.1vh), 17px);
+                  line-height: 1.7;
+                  max-width: min(44ch, 100%);
+                  margin-bottom: clamp(14px, 3.4vh, 36px); }
+.cover-cta-row  { margin-bottom: clamp(12px, 2.6vh, 28px); flex-wrap: wrap; }
+
+/* ── The typewriter sizes off the available height ──
+   Height-driven with width:auto keeps the aspect ratio without letterboxing. */
+.cover-visual {
+  height: 100%;
+  min-height: 0;
+  justify-content: center;
+  gap: clamp(10px, 2vh, 20px);
+}
+.typewriter-wrap { min-height: 0; flex: 0 1 auto; gap: clamp(6px, 1.4vh, 14px); }
+.tw-machine {
+  width: auto;
+  height: min(42vh, 350px);
+  max-width: 100%;
+}
+.cover-stats { flex: 0 0 auto; }
+.stat-card { padding: clamp(8px, 1.4vh, 12px) clamp(11px, 1.2vw, 16px); }
+
+/* ── Short windows: shed the optional furniture rather than overflow ── */
+@media (max-height: 700px) {
+  .cover-stats { display: none; }
+  .tw-machine { height: min(46vh, 320px); }
+}
+
+@media (max-height: 560px) {
+  .cover-features { display: none; }
+  .cover-kicker { display: none; }
+  .tw-typed-text { display: none; }
+}
+
+/* Below 900px the artwork is already hidden, so the copy centres itself. */
+@media (max-width: 900px) {
+  .cover-content { justify-items: center; text-align: center; }
+  .cover-copy { align-items: center; padding-right: 0; }
+  .cover-subhead { max-width: 460px; }
+  .cover-proof { justify-content: center; }
 }
